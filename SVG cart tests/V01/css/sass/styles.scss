@@ -1,0 +1,121 @@
+* {
+    border: 1px solid transparent;
+}
+//vars
+$fg: black;
+$bg: white;
+
+svg {
+    width: 800px;
+}
+
+body {
+    background: $bg;
+    color: white;
+}
+
+a {
+    color: inherit;
+}
+
+h1,
+h2,
+h3,
+h4 {
+    margin: 0;
+    margin-bottom: 10px;
+    margin-top: 10px;
+}
+
+h1 {
+    font-size: 3em;
+}
+
+%ball {
+    background: $fg;
+    border-radius: 100%;
+    width: 80px;
+    height: 80px;
+    position: absolute;
+    top: 20px;
+    color: white;
+    text-align: center;
+    line-height: 80px;
+    transform: translate3d(0, 0, 0);
+    transition: transform ease-out 200ms;
+}
+
+.container {   
+ margin-left: 40px;
+}
+
+.buttons {
+    display: inline-block;
+}
+
+.menu-open-button {
+    @extend %ball;
+    z-index: 2;
+    transition-timing-function: cubic-bezier(0.175, 0.885, 0.320, 1.275);
+    transition-duration: 400ms;
+    transform: scale(1.1, 1.1) translate3d(0, 0, 0);
+    cursor: pointer;
+}
+
+.menu-open {
+    display: none;
+}
+
+.bag-icon {
+  stroke-width: 0;
+  stroke: currentColor;
+  fill: currentColor;
+}
+
+
+.bag-btn {
+    filter: url('#shadowed-goo');
+    display: inline-block;
+    margin-right: 30px;
+
+    width: 100%;
+    a {
+        text-decoration: none;
+    }
+
+}
+
+.item-counter {
+    @extend %ball;
+    font-size: 52px;
+    letter-spacing: -6px;
+    text-indent: -6px;
+}
+
+.item-counter {
+    &:hover {
+        background: purple;
+        color: white;
+    }
+}
+
+.menu-open-button:hover {
+    transform: scale(1.2, 1.2) translate3d(0, 0, 0);
+}
+
+.item-counter-trans {
+    transition-timing-function: cubic-bezier(0.165, 0.840, 0.440, 1.000);
+    transition-duration: 300ms+(500ms);
+    transform: translate3d(110px, 0, 0);
+}
+
+@keyframes reset-btn {
+    0%   {transform: scale(1, 1) translate3d(110px, 0, 0);}
+    100%  {transform: scale(0.1, 0.1) translate3d(110px, 0, 0);}
+}
+
+.item-counter-trans-scale {
+    animation: reset-btn 300ms linear;
+}
+
+

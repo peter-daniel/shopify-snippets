@@ -1,0 +1,230 @@
+{% comment %}Sets related content{% endcomment %}
+{% capture item1 %}{{product.metafields.c_f.item-1}}{% endcapture %}
+{% capture item2 %}{{product.metafields.c_f.item-2}}{% endcapture %}
+
+{% capture bundler %}{{ "now" | date: "%Y-%m-%d %H:%M" | handleize }}{% endcapture %}
+
+
+
+{% if settings.show-sku %}<span class="variant-sku">{{ product.variants.first.sku }}</span>{% endif %}
+<form action="/cart/add" method="post" data-money-format="{{ shop.money_format }}" enctype="multipart/form-data" id="AddToCartForm">
+
+  {% assign variant = product.selected_or_first_available_variant %}
+
+
+  {% paginate collections.all-products.products by 1000 %}
+        {% for product in collections.all-products.products %}
+          {% if product.handle == item1 %}
+              {% comment %} add line-item-property for cart bundling {% endcomment %}
+              <input class="item_properties" type="hidden" name="properties[_bundle_id]" value="{{ bundler }}">
+
+                <div class="sub-product sub-product-1 text-center">
+                    <h4>{{ product.title | escape }}</h4>
+
+                    {% if product.variants.size > 0 %}
+                    <div class="select">
+                        <select id="product-select-{{ product.id }}" class="item1-select combined-select" name='id' >
+                            {% comment %}<option value="" selected="selected">None</option>{% endcomment %}
+                            {% for variant in product.variants %}
+                            <option class=" {% if variant.available %} available {% else %} soldout {% endif %} {{ variant.title | handleize }}" {% if variant == product.selected_or_first_available_variant %} selected="selected" {% endif %} value="{{ variant.id }}" data-value="{{ variant.title | handleize }}" >{{ variant.title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+
+                    <script type="text/javascript">
+
+                      $(function() {
+                        $product = $('#product-' + {{ product.id }});
+                        if($('.single-option-selector', $product).length == 0) {
+                          new Shopify.OptionSelectors("product-select-{{ product.id }}",
+                            { product: {{ product | json }},
+                            onVariantSelected: selectCallback{% if template contains 'product'%}, enableHistoryState: true{% endif %} });
+                        }
+                      });
+
+                    </script>
+
+                </div>
+                {% endif %}
+
+        {% endfor %}
+    {% endpaginate %}
+
+    {% paginate collections.all-products.products by 1000 %}
+        {% for product in collections.all-products.products %}
+          {% if product.handle == item2 %}
+          {% comment %} add line-item-property for cart bundling {% endcomment %}
+          <input class="item_properties" type="hidden" name="properties[_bundle_id]" value="{{ bundler }}">
+
+                <div class="sub-product sub-product-2 text-center">
+                    <h4>{{ product.title | escape }}</h4>
+
+                    {% if product.variants.size > 0 %}
+                    <div class="select">
+                        <select id="product-select-{{ product.id }}" class="item2-select combined-select" name='id' >
+                            {% comment %}<option value="" selected="selected">None</option>{% endcomment %}
+                            {% for variant in product.variants %}
+                            <option class=" {% if variant.available %} available {% else %} soldout {% endif %} {{ variant.title | handleize }}" {% if variant == product.selected_or_first_available_variant %} selected="selected" {% endif %} value="{{ variant.id }}" data-value="{{ variant.title | handleize }}" >{{ variant.title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+
+                    <script type="text/javascript">
+
+                      $(function() {
+                        $product = $('#product-' + {{ product.id }});
+                        if($('.single-option-selector', $product).length == 0) {
+                          new Shopify.OptionSelectors("product-select-{{ product.id }}",
+                            { product: {{ product | json }},
+                            onVariantSelected: selectCallback{% if template contains 'product'%}, enableHistoryState: true{% endif %} });
+                        }
+                      });
+
+                    </script>
+
+                </div>
+                {% endif %}
+
+        {% endfor %}
+    {% endpaginate %}
+
+
+
+
+  <div class="what-is-it">
+    {% if product.options.first != 'Title' %}
+    <label>{{ product.options.first }}:</label>{% for variant in product.variants %}<span class="it-is">{{ variant.option1 | escape }}</span>{% endfor %}
+    {% endif %}
+  </div>
+  <div class="product-variants"></div><!-- product variants -->
+  <input  type="hidden" id="{{ variant.id }}" name="id" data-sku="{{ variant.sku }}" value="{{ product.variants[0].id }}" />
+
+
+
+  {% if product.available %}
+  <div id="product-add">
+    <input min="1" type="hidden" id="quantity" name="quantity" value="1" />
+{% comment %}    <input min="1" type="hidden" id="property" name="property" value="{{ bundler }}" />{% endcomment %}
+    <input type="submit" name="button" class="add add-multiple" id="AddToCart" value="{{ 'products.product.add_to_cart' | t }}" />
+  </div>
+  <p class="add-to-cart-msg"></p>
+  {% endif %}
+  <div class="clear"></div>
+</form>
+
+{% if template != 'product.quick' %}
+<ul id="popups">
+  {% if settings.popup_1 %}<li class="first"><a href="#pop-one" class="fancybox">{{ pages[settings.popup-one].title }}</a></li>{% endif %}
+  {% if settings.popup_2 %}<li><a href="#pop-two" class="fancybox">{{ pages[settings.popup-two].title }}</a></li>{% endif %}
+  {% if settings.popup_3 %}<li><a href="#pop-three" class="fancybox">{{ pages[settings.popup-three].title }}</a></li>{% endif %}
+  {% if settings.popup_4 %}<li class="last"><a href="#pop-four" class="fancybox">{{ 'products.product.popup_question' | t }}</a></li>{% endif %}
+</ul>
+<div id="pop-one" style="display: none">{{ pages[settings.popup-one].content }}</div>
+<div id="pop-two" style="display: none">{{ pages[settings.popup-two].content }}</div>
+<div id="pop-three" style="display: none">{{ pages[settings.popup-three].content }}</div>
+<div id="pop-four" style="display: none">{% include 'question' %}</div>
+{% endif %}
+
+<script>
+  // Shopify Product form requirement
+  selectCallback = function(variant, selector) {
+    var $product = $('#product-' + selector.product.id);
+    if (variant && variant.available == true) {
+      if(variant.compare_at_price > variant.price){
+        $('.was', $product).html(Shopify.formatMoney(variant.compare_at_price, $('form', $product).data('money-format')))
+      } else {
+        $('.was', $product).text('')
+      }
+      $('.product-price', $product).html(Shopify.formatMoney(variant.price, $('form', $product).data('money-format')))
+      $('.add', $product).removeClass('disabled').removeAttr('disabled').val('{{ 'products.product.add_to_cart' | t }}');
+      } else {
+      var message = variant ? "{{ 'products.product.sold_out' | t }}" : "{{ 'products.product.sold_out' | t }}";
+      $('.was', $product).text('')
+      $('.product-price', $product).text(message);
+      $('.add', $product).addClass('disabled').attr('disabled', 'disabled').val(message);
+    }
+
+    if (variant && variant.featured_image) {
+      var original_image = $(".bigimage-{{ product.id }} img"), new_image = variant.featured_image;
+        Shopify.Image.switchImage(new_image, original_image[0], function (new_image_src, original_image, element) {
+        $(element).attr('src', new_image_src);
+        $('.thumbnail[data-image-id="' + variant.featured_image.id + '"]').trigger('click');
+        {% if template contains 'product' %}
+        $('.zoomImg').attr('src', new_image_src);
+        {% endif %}
+      });
+    }
+
+    {% if settings.show-sku %}
+    if (variant) {
+      $('.variant-sku').text(variant.sku);
+    }
+    else {
+      $('.variant-sku').empty();
+    }
+    {% endif %}
+
+  };
+</script>
+
+
+
+<script>
+
+        $('#AddToCart').on('click', function(e){
+        e.preventDefault();
+        var quantity = $('#quantity').val();
+        var item1 = $('.item1-select').val();
+        var item2 = $('.item2-select').val();
+        var bundle = $('.item_properties').val();
+
+
+        // jQuery.post('/cart/update.js', {updates: values });
+        $.ajax({
+            type: 'POST',
+            url: '/cart/add.js',
+            async: false,
+
+            data: {
+              quantity: quantity,
+              id: item1,
+              properties: {bundle}
+            },
+
+            dataType: 'json',
+            error: function( jqXHR, textStatus, errorThrown ) {
+             // console.log( 'fail' ) ;
+            },
+            success: function( data ) {
+              // console.log(data);
+                // console.log( 'success' ) ;
+               ajaxCart.load();
+            }
+        });
+
+        $.ajax({
+            type: 'POST',
+            url: '/cart/add.js',
+            async: false,
+
+            data: {
+              quantity: quantity,
+              id: item2,
+              properties: {bundle}
+            },
+
+            dataType: 'json',
+            error: function( jqXHR, textStatus, errorThrown ) {
+             // console.log( 'fail' ) ;
+            },
+            success: function( data ) {
+              // console.log(data);
+                // console.log( 'success' ) ;
+               ajaxCart.load();
+            }
+        });
+    });
+
+</script>

@@ -1,0 +1,148 @@
+<div id="shopping-cart" class="desktop-12 tablet-6 mobile-3">
+  <h2>{{ 'cart.general.title' | t }}</h2>
+  {% if cart.item_count == 0 %}
+  <p>{{ 'cart.general.empty' | t }}</p>
+
+  {% else %}
+  <script type="text/javascript">
+    function remove_item(id, id2) {
+      document.getElementById('updates_'+id).value = 0;
+      document.getElementById('updates_'+id2).value = 0;
+      document.getElementById('cartform').submit();
+    }
+  </script>
+  <form action="/cart" method="post" id="cartform">
+
+    <table>
+      <thead>
+        <tr>
+          <th><label>{{ 'cart.general.product' | t }}</label></th>
+          <th><label>{{ 'cart.general.price' | t }}</label></th>
+          <th style="text-align: center;"><label>{{ 'cart.general.qty' | t }}</label></th>
+          <th style="text-align: center;"><label>{{ 'cart.general.remove' | t }}</label></th>
+          <th><label>{{ 'cart.general.price' | t }}</label></th>
+        </tr>
+      </thead>
+      <tbody>
+
+        {% for item in cart.items %}
+          {% if item.properties %}
+              {% if item.product.type == 'bikini-top' %}
+                  {% for value in item.properties %}
+                    {% assign timestamp = value.last %}
+                  {% endfor %}
+              {% for bottom in cart.items %}
+                {% if bottom.product.type == 'bikini-bottom' %}
+                  {% for bottomValue in bottom.properties %}
+                    {% assign bottomTimestamp = bottomValue.last %}
+                  {% endfor %}
+                  {% if bottomTimestamp == timestamp %}
+
+                  {% comment %} combine the 2 items in one line {% endcomment %}
+                  <tr>
+                    <td class="cart-item">
+                    <div class="cart-image">
+                    <a href="{{ bottom.url }}" title="{{ bottom.product.title | escape }}">
+                      <img src="{{ bottom | img_url: 'compact' }}" alt="{{ bottom.title | escape }}" />
+                      </a>
+                      <a href="{{ item.url }}" title="{{ item.product.title | escape }}">
+                       <img src="{{ item | img_url: 'compact' }}" alt="{{ item.title | escape }}" />
+                      </a>
+                    </div>
+                    <div class="cart-title">
+                      {% if settings.vendor %}<p>{{ item.vendor }}</p>{% endif %}
+                      {{ item.title }} <br>
+                      {{ bottom.title }}
+                    </div>
+                    </td>
+                    <td class="cart-price">
+
+                      {% capture top-price %}{{ item.price }}{% if item.variant.compare_at_price > item.price %}&nbsp;<del>{{ item.variant.compare_at_price }}</del>{% endif %}{% endcapture %}
+
+                      {% capture bottom-price %}{{ bottom.price }}{% if bottom.variant.compare_at_price > bottom.price %}&nbsp;<del>{{ bottom.variant.compare_at_price }}</del>{% endif %}{% endcapture %}
+
+                      {% assign bundle-total = top-price | plus: bottom-price %}
+
+                      {{ bundle-total | money }}
+
+                    </td>
+                    <td class="cart-quantity">
+                      <input type="text" class="cart-qty" size="4" name="updates[{{ item.id }}]" id="updates_{{ item.variant.id }}" value="{{ item.quantity }}" onfocus="this.select();"/>
+                      <input type="text" class="cart-qty" size="4" name="updates[{{ bottom.id }}]" id="updates_{{ bottom.variant.id }}" value="{{ bottom.quantity }}" onfocus="this.select();"/>
+                    </td>
+                    <td class="cart-remove">
+                      <a href="#" onclick="remove_item({{ item.variant.id}},{{bottom.variant.id}}); return false;"><i class="fa fa-times"></i></a>
+                    </td>
+                    <td class="cart-total">
+                      {{ bundle-total | money }}
+                    </td>
+                  </tr>
+
+                  {% comment %} combine the 2 items in one line {% endcomment %}
+
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+
+
+          {% else %}
+
+
+            <tr>
+              <td class="cart-item">
+              <div class="cart-image">
+                <a href="{{ item.url }}" title="{{ item.product.title | escape }}">
+                  <img src="{{ item | img_url: 'compact' }}" alt="{{ item.title | escape }}" />
+                </a>
+              </div>
+              <div class="cart-title">
+                {% if settings.vendor %}<p>{{ item.vendor }}</p>{% endif %}
+                {{ item.title }}
+              </div>
+              </td>
+              <td class="cart-price">
+                {{ item.price | money }}{% if item.variant.compare_at_price > item.price %}&nbsp;<del>{{ item.variant.compare_at_price | money }}</del>{% endif %}
+              </td>
+              <td class="cart-quantity">
+                <input type="text" class="cart-qty" size="4" name="updates[{{ item.id }}]" id="updates_{{ item.variant.id }}" value="{{ item.quantity }}" onfocus="this.select();"/>
+              </td>
+              <td class="cart-remove">
+                <a href="#" onclick="remove_item({{ item.variant.id }}); return false;"><i class="fa fa-times"></i></a>
+              </td>
+              <td class="cart-total">
+                {{ item.line_price | money }}
+              </td>
+            </tr>
+
+          {% endif %}
+        {% endfor %}
+
+      </tbody>
+    </table>
+
+
+
+
+    <div id="basket-right" class="desktop-3 tablet-6 mobile-3">
+      <h4>{{ 'cart.general.subtotal' | t }} {{ cart.total_price | money }}</h4>
+      <input type="submit" name="update" id="update-cart" value="{{ 'cart.general.update' | t }}" class="button" />
+      <input type="submit" name="checkout" id="checkout" value="{{ 'cart.general.checkout' | t }}" class="button" />
+      <div class="clear"></div>
+      {% if additional_checkout_buttons %}
+      {{ content_for_additional_checkout_buttons }}
+      {% endif %}
+      <div class="clear"></div>
+    </div>
+
+    {% if settings.cart_notes_enable %}
+    <div id="cart-notes" class="desktop-12 mobile-3">
+      <label for="note"><strong>{{ 'cart.general.note' | t }}</strong></label>
+      <textarea name="note" id="note" rows="5" cols="60">{{cart.note}}</textarea>
+    </div>
+    {% endif %}
+
+  </form>
+  {% endif %}
+</div>
+
